@@ -127,12 +127,14 @@
       const canvas = document.getElementById("game-canvas");
       const ctx = canvas.getContext("2d");
 
+      const letters = "AUDIOECHOES".split("");
+      const distractions = ["⚫", "⬛", "◼️", "▪️", "🕳️"];
+
       let paddle, bullets = [], bricks = [], particles = [];
       let timer = 60, timerInterval;
       let gameRunning = false, gameOver = false;
       let showStartScreen = true;
 
-      const letters = "AUDIOECHOES".split("");
       const startBtn = document.getElementById('start-btn');
       const startDesc = document.getElementById('start-description');
       const startScreen = document.getElementById('start-screen');
@@ -148,13 +150,19 @@
         if (!gameRunning || showStartScreen) draw();
       }
 
-      function spawnFallingLetter() {
+      function spawnFallingObject() {
+        const isLetter = Math.random() < 0.4; // ✅ Only 40% are actual targets
+        const char = isLetter
+          ? letters[Math.floor(Math.random() * letters.length)]
+          : distractions[Math.floor(Math.random() * distractions.length)];
+
         bricks.push({
-          x: Math.random() * (canvas.width - 20),
-          y: -20,
-          char: letters[Math.floor(Math.random() * letters.length)],
+          x: Math.random() * (canvas.width - 30),
+          y: -30,
+          char,
+          isLetter,
           damage: 0,
-          speed: 0.8 + Math.random() * 1.2 // ✅ slower fall
+          speed: 0.7 + Math.random() * 0.8 // ✅ slower fall
         });
       }
 
@@ -166,9 +174,7 @@
         timer = 60;
         showStartScreen = false;
 
-        for (let i = 0; i < 10; i++) {
-          spawnFallingLetter();
-        }
+        for (let i = 0; i < 10; i++) spawnFallingObject();
 
         const bottomSpace = isMobile() ? canvas.height * 0.15 : canvas.height * 0.05;
         paddle = {
@@ -195,7 +201,7 @@
         touchControls.style.display = 'none';
         startDesc.innerText = win
           ? "YOU WIN (NOTHING AT ALL)"
-          : "A LETTER TOUCHED THE GROUND\nGAME OVER";
+          : "YOU MISSED A LETTER\nGAME OVER";
         startBtn.innerText = "RESTART";
         startScreen.classList.remove('hidden');
         draw();
@@ -218,7 +224,6 @@
           ctx.fill();
         });
 
-        // ✅ Smaller letters
         ctx.font = `${canvas.width / 20}px 'IBM Plex Mono'`;
         ctx.textBaseline = 'top';
         bricks.forEach(b => {
@@ -260,14 +265,14 @@
 
         bricks.forEach((brick, brI) => {
           brick.y += brick.speed;
-          if (brick.y > canvas.height - 20) {
+
+          // ❌ Only lose if a missed letter hits bottom
+          if (brick.isLetter && brick.y > canvas.height - 20) {
             endGame(false);
           }
         });
 
-        if (Math.random() < 0.02) {
-          spawnFallingLetter();
-        }
+        if (Math.random() < 0.03) spawnFallingObject(); // Balanced spawn rate
 
         bullets.forEach((b, bi) => {
           bricks.forEach((brick, brI) => {
@@ -278,19 +283,21 @@
               b.y < brick.y + 40 &&
               b.y > brick.y
             ) {
-              brick.damage++;
-              if (brick.damage >= 1) {
-                for (let i = 0; i < 10; i++) {
-                  particles.push({
-                    x: brick.x + w / 2,
-                    y: brick.y,
-                    angle: Math.PI * 2 * i / 10,
-                    size: 12
-                  });
+              if (brick.isLetter) {
+                brick.damage++;
+                if (brick.damage >= 1) {
+                  for (let i = 0; i < 10; i++) {
+                    particles.push({
+                      x: brick.x + w / 2,
+                      y: brick.y,
+                      angle: Math.PI * 2 * i / 10,
+                      size: 12
+                    });
+                  }
+                  bricks.splice(brI, 1);
                 }
-                bricks.splice(brI, 1);
+                bullets.splice(bi, 1);
               }
-              bullets.splice(bi, 1);
             }
           });
         });
