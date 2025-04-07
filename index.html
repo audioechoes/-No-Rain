@@ -106,9 +106,10 @@
 
     <div class="start-screen" id="start-screen">
       <div id="start-description">
-        SHOOT AUDIO AND ECHOES  
-        NEVER SHOOT RAIN  
-        (EMOTIONAL DAMAGE MAY OCCUR)  
+        SHOOT ONLY AUDIO AND ECHOES  
+        NEVER SHOOT RAIN — JUST LET IT FALL  
+        SURVIVE 60 SECONDS TO WIN  
+        (EMOTIONAL DAMAGE MAY STILL OCCUR)  
         LEFT / RIGHT TO MOVE  
         SPACEBAR TO SHOOT
       </div>
@@ -151,21 +152,20 @@
       }
 
       function spawnWord() {
-  const allWords = realWords.concat(distractions);
-  const text = allWords[Math.floor(Math.random() * allWords.length)];
-  ctx.font = `${canvas.width / 38}px 'IBM Plex Mono'`;
-  const width = ctx.measureText(text).width;
+        const allWords = realWords.concat(distractions);
+        const text = allWords[Math.floor(Math.random() * allWords.length)];
+        ctx.font = `${canvas.width / 38}px 'IBM Plex Mono'`;
+        const width = ctx.measureText(text).width;
+        const x = 10 + Math.random() * (canvas.width - width - 20);
 
-  const x = 10 + Math.random() * (canvas.width - width - 20); // ✅ Clean horizontal spawn
-
-  words.push({
-    x,
-    y: -30,
-    text,
-    isReal: realWords.includes(text),
-    speed: 0.3 + Math.random() * 0.3
-  });
-}
+        words.push({
+          x,
+          y: -30,
+          text,
+          isReal: realWords.includes(text),
+          speed: 0.3 + Math.random() * 0.3
+        });
+      }
 
       function startGame() {
         resizeCanvas();
@@ -202,6 +202,15 @@
 
         if (win) {
           startDesc.innerText = "YOU WIN\n(THOUGH YOU STILL FEEL EMPTY)";
+          // bonus win effect!
+          for (let i = 0; i < 40; i++) {
+            particles.push({
+              x: canvas.width / 2,
+              y: canvas.height / 2,
+              angle: Math.random() * Math.PI * 2,
+              size: 10 + Math.random() * 5
+            });
+          }
         } else if (shotRain) {
           startDesc.innerText = "YOU SHOT RAIN\n(WHY WOULD YOU DO THAT TO THE RAIN?)\nGAME OVER";
         }
@@ -268,7 +277,7 @@
           word.y += word.speed;
         });
 
-        if (Math.random() < 0.012) spawnWord(); // Slower, more playful
+        if (Math.random() < 0.012) spawnWord();
 
         bullets.forEach((b, bi) => {
           words.forEach((w, wi) => {
