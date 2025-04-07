@@ -154,7 +154,7 @@
           y: -20,
           char: letters[Math.floor(Math.random() * letters.length)],
           damage: 0,
-          speed: 2 + Math.random() * 2
+          speed: 0.8 + Math.random() * 1.2 // ✅ slower fall
         });
       }
 
@@ -218,7 +218,8 @@
           ctx.fill();
         });
 
-        ctx.font = `${canvas.width / 12}px 'IBM Plex Mono'`;
+        // ✅ Smaller letters
+        ctx.font = `${canvas.width / 20}px 'IBM Plex Mono'`;
         ctx.textBaseline = 'top';
         bricks.forEach(b => {
           ctx.fillStyle = b.damage === 1 ? "gray" : "black";
