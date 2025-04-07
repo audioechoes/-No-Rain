@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>(No) Rain</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: transparent;
+      font-family: 'IBM Plex Mono', monospace;
+      color: black;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    .game-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      background: transparent;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      display: block;
+    }
+
+    .start-screen {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 10;
+    }
+
+    #start-description {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      color: black;
+      white-space: pre-line;
+      pointer-events: none;
+    }
+
+    #start-btn {
+      font-size: 1rem;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid black;
+      color: black;
+      cursor: pointer;
+    }
+
+    #start-btn:hover {
+      background: black;
+      color: white;
+    }
+
+    .start-screen.hidden {
+      display: none;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      gap: 5px;
+      z-index: 9;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 1rem;
+      background: transparent;
+      border: 1px solid black;
+      color: black;
+      text-align: center;
+      font-family: 'IBM Plex Mono', monospace;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .controls {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-wrapper">
+    <canvas id="game-canvas"></canvas>
+
+    <div class="start-screen" id="start-screen">
+      <div id="start-description">
+        SHOOT FALLING LETTERS  
+        ONLY A U D I O E C H O E S  
+        MISS ONE — YOU'RE DONE  
+        LEFT / RIGHT TO MOVE  
+        SPACE TO SHOOT
+      </div>
+      <button id="start-btn">START</button>
+    </div>
+
+    <div class="controls" id="touch-controls">
+      <div class="btn" id="left-btn">LEFT</div>
+      <div class="btn" id="fire-btn">FIRE</div>
+      <div class="btn" id="right-btn">RIGHT</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById("game-canvas");
+      const ctx = canvas.getContext("2d");
+
+      let paddle, bullets = [], bricks = [], particles = [];
+      let timer = 60, timerInterval;
+      let gameRunning = false, gameOver = false;
+      let showStartScreen = true;
+
+      const letters = "AUDIOECHOES".split("");
+      const startBtn = document.getElementById('start-btn');
+      const startDesc = document.getElementById('start-description');
+      const startScreen = document.getElementById('start-screen');
+      const touchControls = document.getElementById('touch-controls');
+
+      function isMobile() {
+        return window.innerWidth <= 768;
+      }
+
+      function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        if (!gameRunning || showStartScreen) draw();
+      }
+
+      function spawnFallingLetter() {
+        bricks.push({
+          x: Math.random() * (canvas.width - 20),
+          y: -20,
+          char: letters[Math.floor(Math.random() * letters.length)],
+          damage: 0,
+          speed: 2 + Math.random() * 2
+        });
+      }
+
+      function startGame() {
+        resizeCanvas();
+        gameOver = false;
+        bullets = [];
+        bricks = [];
+        timer = 60;
+        showStartScreen = false;
+
+        for (let i = 0; i < 10; i++) {
+          spawnFallingLetter();
+        }
+
+        const bottomSpace = isMobile() ? canvas.height * 0.15 : canvas.height * 0.05;
+        paddle = {
+          x: canvas.width / 2 - 75,
+          y: canvas.height - bottomSpace,
+          width: 150,
+          height: canvas.height * 0.02
+        };
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (timer-- <= 0) endGame(true);
+        }, 1000);
+
+        gameRunning = true;
+        startScreen.classList.add('hidden');
+        touchControls.style.display = isMobile() ? 'flex' : 'none';
+        requestAnimationFrame(update);
+      }
+
+      function endGame(win) {
+        clearInterval(timerInterval);
+        gameRunning = false;
+        touchControls.style.display = 'none';
+        startDesc.innerText = win
+          ? "YOU WIN (NOTHING AT ALL)"
+          : "A LETTER TOUCHED THE GROUND\nGAME OVER";
+        startBtn.innerText = "RESTART";
+        startScreen.classList.remove('hidden');
+        draw();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "black";
+        ctx.textAlign = "left";
+        ctx.font = "16px 'IBM Plex Mono'";
+        ctx.fillText(`TIME: ${timer}`, 10, canvas.height * 0.05);
+
+        if (showStartScreen) return;
+
+        ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+
+        bullets.forEach(b => {
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        ctx.font = `${canvas.width / 12}px 'IBM Plex Mono'`;
+        ctx.textBaseline = 'top';
+        bricks.forEach(b => {
+          ctx.fillStyle = b.damage === 1 ? "gray" : "black";
+          ctx.fillText(b.char, b.x, b.y);
+        });
+
+        particles.forEach((p, i) => {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + Math.cos(p.angle) * p.size, p.y + Math.sin(p.angle) * p.size);
+          ctx.strokeStyle = "black";
+          ctx.stroke();
+          p.size--;
+          if (p.size <= 0) particles.splice(i, 1);
+        });
+      }
+
+      function shoot() {
+        if (gameRunning) {
+          bullets.push({
+            x: paddle.x + paddle.width / 2,
+            y: paddle.y,
+            vx: (Math.random() - 0.5) * 2,
+            vy: -5
+          });
+        }
+      }
+
+      function update() {
+        if (!gameRunning) return;
+
+        bullets.forEach((b, i) => {
+          b.x += b.vx;
+          b.y += b.vy;
+          if (b.x <= 0 || b.x >= canvas.width) b.vx *= -1;
+          if (b.y <= 0) b.vy *= -1;
+        });
+
+        bricks.forEach((brick, brI) => {
+          brick.y += brick.speed;
+          if (brick.y > canvas.height - 20) {
+            endGame(false);
+          }
+        });
+
+        if (Math.random() < 0.02) {
+          spawnFallingLetter();
+        }
+
+        bullets.forEach((b, bi) => {
+          bricks.forEach((brick, brI) => {
+            let w = ctx.measureText(brick.char).width;
+            if (
+              b.x + 5 > brick.x &&
+              b.x - 5 < brick.x + w &&
+              b.y < brick.y + 40 &&
+              b.y > brick.y
+            ) {
+              brick.damage++;
+              if (brick.damage >= 1) {
+                for (let i = 0; i < 10; i++) {
+                  particles.push({
+                    x: brick.x + w / 2,
+                    y: brick.y,
+                    angle: Math.PI * 2 * i / 10,
+                    size: 12
+                  });
+                }
+                bricks.splice(brI, 1);
+              }
+              bullets.splice(bi, 1);
+            }
+          });
+        });
+
+        bullets = bullets.filter(b => b.y >= -10 && b.y <= canvas.height + 10);
+        draw();
+        requestAnimationFrame(update);
+      }
+
+      function movePaddle(dir) {
+        paddle.x += dir * 20;
+        paddle.x = Math.max(0, Math.min(canvas.width - paddle.width, paddle.x));
+      }
+
+      startBtn.addEventListener('click', () => startGame());
+      window.addEventListener("keydown", e => {
+        if (e.key === "ArrowLeft") movePaddle(-1);
+        else if (e.key === "ArrowRight") movePaddle(1);
+        else if (e.key === " ") shoot();
+      });
+
+      document.getElementById("left-btn").addEventListener("touchstart", () => movePaddle(-1));
+      document.getElementById("right-btn").addEventListener("touchstart", () => movePaddle(1));
+      document.getElementById("fire-btn").addEventListener("touchstart", () => shoot());
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      draw();
+    })();
+  </script>
+</body>
+</html>
