@@ -106,11 +106,11 @@
 
     <div class="start-screen" id="start-screen">
       <div id="start-description">
-        SHOOT FALLING LETTERS  
-        ONLY A U D I O E C H O E S  
-        MISS ONE — YOU'RE DONE  
+        SHOOT THE FALLING LETTERS  
+        IGNORE EVERYTHING ELSE  
+        (LIKE YOUR FEELINGS)  
         LEFT / RIGHT TO MOVE  
-        SPACE TO SHOOT
+        SPACEBAR TO SHOOT
       </div>
       <button id="start-btn">START</button>
     </div>
@@ -151,7 +151,7 @@
       }
 
       function spawnFallingObject() {
-        const isLetter = Math.random() < 0.4; // ✅ Only 40% are actual targets
+        const isLetter = Math.random() < 0.4;
         const char = isLetter
           ? letters[Math.floor(Math.random() * letters.length)]
           : distractions[Math.floor(Math.random() * distractions.length)];
@@ -162,7 +162,7 @@
           char,
           isLetter,
           damage: 0,
-          speed: 0.7 + Math.random() * 0.8 // ✅ slower fall
+          speed: 0.7 + Math.random() * 0.8
         });
       }
 
@@ -200,8 +200,8 @@
         gameRunning = false;
         touchControls.style.display = 'none';
         startDesc.innerText = win
-          ? "YOU WIN (NOTHING AT ALL)"
-          : "YOU MISSED A LETTER\nGAME OVER";
+          ? "YOU WIN\n(NOTHING AT ALL)"
+          : "YOU HAD ONE JOB!\nIT'S OVER";
         startBtn.innerText = "RESTART";
         startScreen.classList.remove('hidden');
         draw();
@@ -265,14 +265,12 @@
 
         bricks.forEach((brick, brI) => {
           brick.y += brick.speed;
-
-          // ❌ Only lose if a missed letter hits bottom
           if (brick.isLetter && brick.y > canvas.height - 20) {
             endGame(false);
           }
         });
 
-        if (Math.random() < 0.03) spawnFallingObject(); // Balanced spawn rate
+        if (Math.random() < 0.03) spawnFallingObject();
 
         bullets.forEach((b, bi) => {
           bricks.forEach((brick, brI) => {
