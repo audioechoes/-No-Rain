@@ -153,7 +153,7 @@
       function spawnWord() {
         const allWords = realWords.concat(distractions);
         const text = allWords[Math.floor(Math.random() * allWords.length)];
-        ctx.font = `${canvas.width / 28}px 'IBM Plex Mono'`; // Smaller text
+        ctx.font = `${canvas.width / 38}px 'IBM Plex Mono'`;
         const width = ctx.measureText(text).width;
 
         words.push({
@@ -161,7 +161,7 @@
           y: -30,
           text,
           isReal: realWords.includes(text),
-          speed: 0.8 + Math.random()
+          speed: 0.3 + Math.random() * 0.3
         });
       }
 
@@ -172,7 +172,7 @@
         timer = 60;
         showStartScreen = false;
 
-        for (let i = 0; i < 6; i++) spawnWord();
+        for (let i = 0; i < 4; i++) spawnWord();
 
         const bottomSpace = isMobile() ? canvas.height * 0.15 : canvas.height * 0.05;
         paddle = {
@@ -226,7 +226,7 @@
           ctx.fill();
         });
 
-        ctx.font = `${canvas.width / 28}px 'IBM Plex Mono'`; // Smaller word font
+        ctx.font = `${canvas.width / 38}px 'IBM Plex Mono'`;
         ctx.textBaseline = 'top';
         words.forEach(w => {
           ctx.fillText(w.text, w.x, w.y);
@@ -266,12 +266,12 @@
           word.y += word.speed;
         });
 
-        if (Math.random() < 0.03) spawnWord();
+        if (Math.random() < 0.012) spawnWord(); // Slower, more playful
 
         bullets.forEach((b, bi) => {
           words.forEach((w, wi) => {
             const wWidth = ctx.measureText(w.text).width;
-            const wHeight = 30;
+            const wHeight = 25;
 
             if (
               b.x > w.x &&
@@ -282,7 +282,6 @@
               if (!w.isReal && w.text === "RAIN") {
                 endGame(false, true);
               } else {
-                // explosion effect
                 for (let i = 0; i < 10; i++) {
                   particles.push({
                     x: w.x + wWidth / 2,
