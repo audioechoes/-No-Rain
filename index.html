@@ -151,19 +151,21 @@
       }
 
       function spawnWord() {
-        const allWords = realWords.concat(distractions);
-        const text = allWords[Math.floor(Math.random() * allWords.length)];
-        ctx.font = `${canvas.width / 38}px 'IBM Plex Mono'`;
-        const width = ctx.measureText(text).width;
+  const allWords = realWords.concat(distractions);
+  const text = allWords[Math.floor(Math.random() * allWords.length)];
+  ctx.font = `${canvas.width / 38}px 'IBM Plex Mono'`;
+  const width = ctx.measureText(text).width;
 
-        words.push({
-          x: Math.random() * (canvas.width - width),
-          y: -30,
-          text,
-          isReal: realWords.includes(text),
-          speed: 0.3 + Math.random() * 0.3
-        });
-      }
+  const x = 10 + Math.random() * (canvas.width - width - 20); // ✅ Clean horizontal spawn
+
+  words.push({
+    x,
+    y: -30,
+    text,
+    isReal: realWords.includes(text),
+    speed: 0.3 + Math.random() * 0.3
+  });
+}
 
       function startGame() {
         resizeCanvas();
