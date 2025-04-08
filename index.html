@@ -42,11 +42,12 @@
       transform: translate(-50%, -50%);
       text-align: center;
       z-index: 10;
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.9);
       border: 1px solid black;
-      padding: 40px 20px;
+      padding: 30px 20px;
       box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      max-width: 80%;
+      width: 90%;
+      max-width: 420px;
     }
 
     #start-description {
@@ -183,10 +184,11 @@
         for (let i = 0; i < 4; i++) spawnWord();
 
         const bottomSpace = isMobile() ? canvas.height * 0.15 : canvas.height * 0.05;
+        const paddleWidth = canvas.width * 0.25;
         paddle = {
-          x: canvas.width / 2 - 75,
+          x: (canvas.width - paddleWidth) / 2,
           y: canvas.height - bottomSpace,
-          width: 150,
+          width: paddleWidth,
           height: canvas.height * 0.02
         };
 
@@ -258,7 +260,6 @@
           if (p.size <= 0) particles.splice(i, 1);
         });
 
-        // ✅ End screen overlay background
         if (!gameRunning && !showStartScreen) {
           ctx.fillStyle = "rgba(255,255,255,0.85)";
           ctx.fillRect(0, canvas.height * 0.25, canvas.width, canvas.height * 0.5);
@@ -280,7 +281,7 @@
           bullets.push({
             x: paddle.x + paddle.width / 2,
             y: paddle.y,
-            vx: 0,
+            vx: (Math.random() - 0.5) * 1.5,
             vy: -5
           });
         }
