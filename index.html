@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>(No) Rain</title>
+  <title>No Rain | A Silly Little Existential Shooter</title>
+  <meta name="description" content="A weird little browser game. Shoot AUDIO and ECHOES. Avoid RAIN. Survive 60 seconds. Feel nothing. Play No Rain, the existential shooter.">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&display=swap" rel="stylesheet">
   <style>
     html, body {
@@ -202,7 +203,6 @@
 
         if (win) {
           startDesc.innerText = "YOU WIN\n(THOUGH YOU STILL FEEL EMPTY)";
-          // bonus win effect!
           for (let i = 0; i < 40; i++) {
             particles.push({
               x: canvas.width / 2,
@@ -252,6 +252,22 @@
           p.size--;
           if (p.size <= 0) particles.splice(i, 1);
         });
+
+        // ✅ End screen overlay background
+        if (!gameRunning && !showStartScreen) {
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.fillRect(0, canvas.height * 0.25, canvas.width, canvas.height * 0.5);
+
+          ctx.fillStyle = "black";
+          ctx.textAlign = "center";
+          ctx.font = "2rem 'IBM Plex Mono'";
+          ctx.fillText(startDesc.innerText.split("\n")[0], canvas.width / 2, canvas.height / 2 - 20);
+
+          ctx.font = "1rem 'IBM Plex Mono'";
+          const lines = startDesc.innerText.split("\n");
+          if (lines[1]) ctx.fillText(lines[1], canvas.width / 2, canvas.height / 2 + 20);
+          if (lines[2]) ctx.fillText(lines[2], canvas.width / 2, canvas.height / 2 + 50);
+        }
       }
 
       function shoot() {
